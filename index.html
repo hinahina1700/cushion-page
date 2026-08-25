@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>クッションページ生成ツール</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        h2 { margin-top: 0; color: #222; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: bold; font-size: 14px; color: #555; }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        
+        .agreement-area {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #444;
+        }
+        .checkbox-group input {
+            margin-right: 10px;
+            margin-top: 4px;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .checkbox-group a { color: #007bff; text-decoration: none; font-weight: bold; }
+        .checkbox-group a:hover { text-decoration: underline; }
+
+        .primary-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        .primary-btn:hover { background-color: #0056b3; }
+        .primary-btn:disabled {
+            background-color: #cccccc !important;
+            color: #666666;
+            cursor: not-allowed;
+        }
+        
+        .copy-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        .copy-btn.success { background-color: #28a745; }
+
+        .sns-share-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .sns-btn {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .sns-btn:hover { opacity: 0.8; }
+        .x-btn { background-color: #000000; }
+        .line-btn { background-color: #06C755; }
+        .native-share-btn { background-color: #17a2b8; }
+
+        #result {
+            margin-top: 25px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 6px;
+        }
+        #outputUrl {
+            word-break: break-all;
+            background: white;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin: 5px 0;
+        }
+        .cushion-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        .cushion-btn:hover { background: #218838; }
+    </style>
+</head>
+<body>
+
+    <div id="mainPage" class="container">
+        <h2>クッションページ作成ツール</h2>
+        <p style="text-align: center; color: #666; margin-top: -10px; margin-bottom: 20px;">安全確認用のリンクを作成します。</p>
+        
+        <div class="form-group">
+            <label for="targetUrl">転送先のURL</label>
+            <input type="text" id="targetUrl" placeholder="https://example.com" required>
+        </div>
+
+        <div class="agreement-area">
+            <label class="checkbox-group">
+                <input type="checkbox" id="agreeTerms" onchange="checkAgreement()">
+                <span><a href="terms.html" target="_blank">利用規約</a> を読み、これに同意します。</span>
+            </label>
+            <label class="checkbox-group">
+                <input type="checkbox" id="agreePrivacy" onchange="checkAgreement()">
+                <span><a href="privacy.html" target="_blank">プライバシーポリシー</a> を読み、これに同意します。</span>
+            </label>
+        </div>
+
+        <button id="submitBtn" class="primary-btn" onclick="makeCushionUrl()" disabled>クッションURLを作成する</button>
+
+        <div id="result" style="display:none;">
+            <strong>完成したURL：</strong>
+            <p id="outputUrl"></p>
+            <button id="copyBtn" class="copy-btn" onclick="copyToClipboard()">URLをコピーする</button>
+            
+            <div class="sns-share-area">
+                <a id="shareX" href="#" target="_blank" class="sns-btn x-btn">X (Twitter) で共有</a>
+                <a id="shareLine" href="#" target="_blank" class="sns-btn line-btn">LINEで送る</a>
+                <button class="sns-btn native-share-btn" onclick="triggerNativeShare()">他のアプリで共有</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cushionPage" class="container" style="display:none; text-align:center;">
+        <h2>移動前の安全確認</h2>
+        <p>以下の外部URLへ移動しようとしています。本当に移動しますか？</p>
+        <p id="destinationUrl" style="color:#d9534f; font-weight:bold; word-break:break-all; background:#f8d7da; padding:10px; border-radius:6px;"></p>
+        
+        <a id="jumpLink" href="#" class="cushion-btn">安全を確認して移動する</a>
+        <br><br>
+        <a href="?" style="color:#6c757d; font-size: 14px;">自分もツールを使う</a><br><br>
+    </div>
+
+    <footer style="text-align: center; margin-top: 40px; font-size: 13px; color: #888;">
+        <!-- admax -->
+        <script src="https://adm.shinobi.jp/s/307546845589431b122484c3371acd7f"></script>
+        <!-- admax -->
+        <a href="terms.html" style="color: #007bff; text-decoration: none;">利用規約</a>
+        <span style="margin: 0 10px;">|</span>
+        <a href="privacy.html" style="color: #007bff; text-decoration: none;">プライバシーポリシー</a>
+        <br><br>
+        &copy; hinahina_1700
+    </footer>
+
+    <script>
+        let currentCushionUrl = ""; 
+        const rawShareText = "安全確認用のクッションページを作成しました！\n#クッションページ";
+
+        function checkAgreement() {
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+            const agreePrivacy = document.getElementById('agreePrivacy').checked;
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (agreeTerms && agreePrivacy) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedData = urlParams.get('data');
+
+            if (encodedData) {
+                try {
+                    // Base64から元の文字列に戻す (日本語などに対応するため btoa/atob と encode/decodeURIComponent を併用)
+                    let targetUrl = decodeURIComponent(escape(atob(encodedData)));
+
+                    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+                        targetUrl = 'https://' + targetUrl;
+                    }
+
+                    document.getElementById('mainPage').style.display = 'none';
+                    document.getElementById('cushionPage').style.display = 'block';
+
+                    document.getElementById('destinationUrl').innerText = targetUrl;
+                    document.getElementById('jumpLink').href = targetUrl;
+                } catch (e) {
+                    alert("URLの解析に失敗しました。");
+                }
+            }
+        }
+
+        function makeCushionUrl() {
+            let target = document.getElementById('targetUrl').value.trim();
+
+            if (!target) return alert('転送先URLを入力してください');
+
+            // 転送先URLをBase64にエンコードする
+            let base64Data = btoa(unescape(encodeURIComponent(target)));
+
+            const baseUrl = window.location.origin + window.location.pathname;
+            currentCushionUrl = `${baseUrl}?data=${base64Data}`;
+
+            document.getElementById('outputUrl').innerText = currentCushionUrl;
+            
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn.innerText = "URLをコピーする";
+            copyBtn.classList.remove('success');
+
+            const shareTextEncoded = encodeURIComponent(rawShareText + "\n\n");
+            document.getElementById('shareX').href = `https://twitter.com/intent/tweet?text=${shareTextEncoded}&url=${encodeURIComponent(currentCushionUrl)}`;
+            document.getElementById('shareLine').href = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentCushionUrl)}`;
+
+            document.getElementById('result').style.display = 'block';
+        }
+
+        function triggerNativeShare() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'クッションページ作成ツール',
+                    text: rawShareText,
+                    url: currentCushionUrl
+                }).catch(err => console.log("共有キャンセル"));
+            } else {
+                alert("お使いのブラウザ・PC環境は『他のアプリで共有』に対応していません。");
+            }
+        }
+
+        function copyToClipboard() {
+            const urlText = document.getElementById('outputUrl').innerText;
+            
+            navigator.clipboard.writeText(urlText).then(() => {
+                const copyBtn = document.getElementById('copyBtn');
+                copyBtn.innerText = "コピーしました！";
+                copyBtn.classList.add('success');
+                
+                setTimeout(() => {
+                    copyBtn.innerText = "URLをコピーする";
+                    copyBtn.classList.remove('success');
+                }, 2000);
+            }).catch(err => {
+                alert('コピーに失敗しました。');
+            });
+        }
+    </script>
+</body>
+</html>
